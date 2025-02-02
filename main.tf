@@ -13,8 +13,6 @@ data "okta_group" "push_group_names" {
   for_each = toset(var.push_group_ids)
   id       = each.key
 }
-
-
   
 locals {
   group_name        = "DEPT-${var.department_name}"
