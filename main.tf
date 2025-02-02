@@ -21,12 +21,12 @@ locals {
   push_group_names  = [for grp in data.okta_group.push_group_names : grp.name]
   mailing_group_names = [for grp in data.okta_group.mailing_group_names : grp.name]
   notes = var.notes == "Group is managed by Terraform. Do not edit manually." ? var.notes : "${var.notes}\nGroup is managed by Terraform. Do not edit manually."
-    custom_attributes = merge(
-    { notes = local.notes },
-    length(local.app_group_names) > 0 ? { applicationAssignments = local.app_group_names } : {},
-    length(local.mailing_group_names) > 0 ? { mailingLists = local.mailing_group_names } : {},
-    length(local.push_group_names) > 0 ? { pushGroups = local.push_group_names } : {}
-  )
+  custom_attributes = merge(
+  { notes = local.notes },
+  length(local.app_group_names) > 0 ? { applicationAssignments = local.app_group_names } : {},
+  length(local.mailing_group_names) > 0 ? { mailingLists = local.mailing_group_names } : {},
+  length(local.push_group_names) > 0 ? { pushGroups = local.push_group_names } : {}
+)
 }
 
 resource "okta_group" "group" {
