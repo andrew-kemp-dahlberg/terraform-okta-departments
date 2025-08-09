@@ -24,10 +24,10 @@ resource "okta_group" "department_group" {
 
 # Configure automatic assignment rule
 
-resource "okta_group_rule" "group_rule" {
+resource "okta_group_rule" "department_rule" {
   name              = local.group_rule_name
   status            = "ACTIVE"
   group_assignments = local.groups_list
   expression_type   = "urn:okta:expression:1.0"
-  expression_value  = "user.department==\"${var.department_name}\ && user.active==true\""
+  expression_value  = "user.department==\"${var.department_name}\" && user.active==true"
 }
