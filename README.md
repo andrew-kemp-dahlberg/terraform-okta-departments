@@ -54,10 +54,10 @@ module "sales_department" {
   # Department Configuration
   department_name = "Sales"
   
-  # Link to existing groups
-  mailing_list_ids = ["00g1234567890abcdef"]
-  application_group_ids = ["00g2345678901bcdefg", "00g3456789012cdefgh"]
-  push_group_ids = ["00g4567890123defghi"]
+  # Link to existing groups by name
+  mailing_list_names = ["all-sales", "sales-announcements"]
+  application_group_names = ["salesforce-users", "crm-{admin}"]
+  push_group_names = ["sales-push-notifications"]
   
   # Custom notes
   notes = "Sales department group for CRM access"
@@ -81,9 +81,9 @@ module "sales_department" {
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|----------|
 | `department_name` | Name of the department | `string` | - | yes |
-| `mailing_list_ids` | List of Okta mailing group IDs to include | `list(string)` | `[]` | no |
-| `application_group_ids` | List of Okta application/role group IDs to include | `list(string)` | `[]` | no |
-| `push_group_ids` | List of Okta push notification group IDs to include | `list(string)` | `[]` | no |
+| `mailing_list_names` | List of Okta mailing group names to include (will be prefixed with ML-) | `list(string)` | `[]` | no |
+| `application_group_names` | List of Okta application/role group names to include (will be prefixed with APP- or APP-ROLE-) | `list(string)` | `[]` | no |
+| `push_group_names` | List of Okta push notification group names to include (will be prefixed with PG-) | `list(string)` | `[]` | no |
 | `notes` | Custom notes for the department group | `string` | `"MANAGED BY TERRAFORM - DO NOT MODIFY MANUALLY"` | no |
 
 ## Outputs
@@ -100,7 +100,10 @@ module "sales_department" {
 
 1. **Group Creation**: The module creates a department group with the name `DEPT-{department_name}`
 2. **Rule Configuration**: A group rule is created that automatically assigns users when their `user.department` attribute matches the specified department name
-3. **Group Integration**: If additional group IDs are provided, they are included in the assignment rule, allowing users to be added to multiple groups simultaneously
+3. **Group Integration**: If additional group names are provided, they are looked up and included in the assignment rule, allowing users to be added to multiple groups simultaneously. Groups are automatically prefixed:
+   - Mailing lists: `ML-` prefix
+   - Push groups: `PG-` prefix  
+   - Application groups: `APP-` prefix (or `APP-ROLE-` for groups with `{application}-{role}` pattern)
 4. **Metadata Management**: Custom profile attributes are stored on the group to track:
    - Management notes
    - Associated application groups
@@ -148,7 +151,7 @@ This rule ensures that:
 1. **Authentication Errors**: Ensure your OAuth 2.0 credentials are valid and have the required scopes
 2. **Group Already Exists**: Check if a group with the same name already exists in Okta
 3. **Rule Conflicts**: Verify that no conflicting group rules exist for the same user criteria
-4. **Missing Groups**: Ensure all referenced group IDs (mailing, application, push) exist in your Okta organization
+4. **Missing Groups**: Ensure all referenced group names (mailing, application, push) exist in your Okta organization
 
 ### Debug Commands
 
