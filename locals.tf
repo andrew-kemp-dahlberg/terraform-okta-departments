@@ -10,7 +10,7 @@ locals {
 
   # Extract names from the data sources (for custom attributes)
   # Add ML- prefix to mailing lists
-  mailing_group_names = [for grp in data.okta_group.mailing_groups : "ML-${grp.name}"]
+  mailing_list_names = [for grp in data.okta_group.mailing_groups : "ML-${grp.name}"]
   
   # Add APP-ROLE- or APP- prefix to application groups based on pattern
   app_group_names = [for grp in data.okta_group.application_groups :  "APP-ROLE-${grp.name}" ]

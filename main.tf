@@ -1,17 +1,17 @@
 
 # Data sources to look up groups by name
 data "okta_group" "mailing_groups" {
-  for_each = toset(var.mailing_list_names)
+  for_each = toset(local.mailing_list_names)
   name     = each.value
 }
 
 data "okta_group" "application_groups" {
-  for_each = toset(var.application_group_names)
+  for_each = toset(local.app_group_names)
   name     = each.value
 }
 
 data "okta_group" "push_groups" {
-  for_each = toset(var.push_group_names)
+  for_each = toset(local.push_group_names)
   name     = each.value
 }
 
