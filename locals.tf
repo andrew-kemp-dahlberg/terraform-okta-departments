@@ -21,9 +21,9 @@ locals {
   # Build custom attributes for the group
   custom_attributes = merge(
     { notes = local.notes },
-    length(local.app_group_names) > 0 ? { applicationAssignments = local.app_group_names } : {},
-    length(local.mailing_list_names) > 0 ? { mailingLists = local.mailing_list_names } : {},
-    length(local.push_group_names) > 0 ? { pushGroups = local.push_group_names } : {},
+    length(local.app_group_names) > 0 ?{ applicationAssignments = [for grp in data.okta_group.application_groups : grp.name ] } : {},
+    length(local.mailing_list_names) > 0 ? { mailingLists = [for grp in data.okta_group.mailing_groups : grp.name ] } : {},
+    length(local.push_group_names) > 0 ? { pushGroups = [for grp in data.okta_group.push_groups : grp.name ] } : {},
     { assignmentProfile = "Not an application assignment group" }
   )
 
