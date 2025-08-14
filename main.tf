@@ -29,5 +29,5 @@ resource "okta_group_rule" "department_rule" {
   status            = "ACTIVE"
   group_assignments = local.groups_list
   expression_type   = "urn:okta:expression:1.0"
-  expression_value  = "user.department==\"${var.department_name}\" && user.active==true"
+  expression_value  = "user.department==\"${var.department_name}\" && user.status==\"ACTIVE\""
 }
