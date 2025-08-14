@@ -1,7 +1,7 @@
 locals {
   # Department group configuration
   group_name        = "DEPT-${var.department_name}"
-  group_description = "Group for the ${var.department_name} department"
+  group_description = "Group for the ${var.department_name} department\nManaged by Terraform. Do not edit manually."
 
   # Extract IDs from the data sources
   mailing_group_ids = [for grp in data.okta_group.mailing_groups : grp.id]
