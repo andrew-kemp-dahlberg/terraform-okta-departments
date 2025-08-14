@@ -1,21 +1,22 @@
-# terraform-okta-departments
+# Terraform Okta Departments Module
 
-A Terraform module for managing Okta department groups with automatic user assignment based on the department attribute. This module creates department-specific groups and configures rules to automatically assign users to appropriate groups based on their department attribute.
+A Terraform module for automating the creation and management of department-based groups in Okta. This module creates standardized department groups with automatic user assignment rules based on department attributes.
 
 ## Features
 
-- Creates Okta groups for departments with consistent naming (DEPT-{department_name})
-- Automatically assigns users to department groups based on their `user.department` attribute
-- Associates departments with existing mailing lists, application groups, and push groups
-- Provides comprehensive outputs for all created and associated resources
-- Supports custom profile attributes for enhanced group metadata
+- **Automated Department Groups**: Creates department groups with consistent naming convention (`DEPT-{department_name}`)
+- **Automatic User Assignment**: Configures group rules to automatically assign users based on their department attribute
+- **Group Integration**: Links department groups with existing mailing lists, application groups, and push groups
+- **Metadata Management**: Maintains custom profile attributes for tracking group relationships
+- **Terraform Lifecycle Management**: Ensures groups are properly marked as Terraform-managed
 
 ## Requirements
 
-| Name | Version |
-|------|---------|
-| terraform | >= 1.0 |
-| okta | ~> 4.13.1 |
+- Terraform >= 1.0
+- Okta Provider ~> 4.13.1
+- Okta API access with the following scopes:
+  - `okta.groups.manage`
+  - `okta.groups.read`
 
 ## Usage
 
@@ -23,10 +24,10 @@ A Terraform module for managing Okta department groups with automatic user assig
 
 ```hcl
 module "engineering_department" {
-  source = "path/to/terraform-okta-departments"
+  source = "./terraform-okta-departments"
 
-  # Okta OAuth Configuration
-  org_name       = "mycompany"
+  # Okta Configuration
+  org_name       = "your-org"
   base_url       = "okta.com"
   client_id      = var.okta_client_id
   private_key_id = var.okta_private_key_id
@@ -37,14 +38,14 @@ module "engineering_department" {
 }
 ```
 
-### Complete Example with Group Associations
+### Advanced Example with Group Integration
 
 ```hcl
 module "sales_department" {
-  source = "path/to/terraform-okta-departments"
+  source = "./terraform-okta-departments"
 
-  # Okta OAuth Configuration
-  org_name       = "mycompany"
+  # Okta Configuration
+  org_name       = "your-org"
   base_url       = "okta.com"
   client_id      = var.okta_client_id
   private_key_id = var.okta_private_key_id
@@ -53,126 +54,131 @@ module "sales_department" {
   # Department Configuration
   department_name = "Sales"
   
-  # Associate with existing groups
-  mailing_list_names = ["Sales-MailingList"]
-  
-  application_group_names = [
-    "CRM-Users",
-    "Sales-Dashboard-Access"
-  ]
-  
-  push_group_names = ["Sales-Push-Group"]
+  # Link to existing groups
+  mailing_list_ids = ["00g1234567890abcdef"]
+  application_group_ids = ["00g2345678901bcdefg", "00g3456789012cdefgh"]
+  push_group_ids = ["00g4567890123defghi"]
   
   # Custom notes
-  notes = "Sales department group - includes Inside Sales and Field Sales teams"
+  notes = "Sales department group for CRM access"
 }
 ```
 
-## Providers
+## Variables
 
-| Name | Version |
-|------|---------|
-| okta | ~> 4.13.1 |
+### Authentication Variables
 
-## Resources
+| Name | Description | Type | Required | Sensitive |
+|------|-------------|------|----------|-----------|
+| `client_id` | OAuth 2.0 client ID for Okta API authentication | `string` | yes | yes |
+| `private_key_id` | Private key ID for OAuth 2.0 authentication | `string` | yes | yes |
+| `private_key` | Private key PEM for OAuth 2.0 authentication | `string` | yes | yes |
+| `org_name` | Okta organization name | `string` | yes | no |
+| `base_url` | Okta base URL (e.g., okta.com, oktapreview.com) | `string` | no | no |
 
-The module creates the following resources:
-
-- `okta_group.department_group` - The main department group
-- `okta_group_rule.department_rule` - Automatic assignment rule for the department
-
-The module also uses data sources to look up existing groups:
-
-- `data.okta_group.mailing_groups` - Existing mailing list groups
-- `data.okta_group.application_groups` - Existing application access groups
-- `data.okta_group.push_groups` - Existing push notification groups
-
-## Inputs
+### Department Configuration
 
 | Name | Description | Type | Default | Required |
-|------|-------------|------|---------|:--------:|
-| client_id | OAuth 2.0 client ID for Okta API authentication. Must have okta.groups.manage and okta.groups.read scopes | `string` | n/a | yes |
-| org_name | The Okta organization name (e.g., 'mycompany' for mycompany.okta.com) | `string` | n/a | yes |
-| base_url | The Okta base URL (e.g., 'okta.com', 'oktapreview.com', 'okta-emea.com') | `string` | `"okta.com"` | no |
-| private_key_id | The ID of the private key used for OAuth 2.0 authentication with Okta | `string` | n/a | yes |
-| private_key | The private key (PEM format) used for OAuth 2.0 authentication with Okta | `string` | n/a | yes |
-| department_name | The name of the department. This will be used in group naming and for matching user.department attribute | `string` | n/a | yes |
-| mailing_list_names | List of existing Okta mailing group names to associate with the department | `list(string)` | `[]` | no |
-| application_group_names | List of existing Okta application/role group names to associate with the department | `list(string)` | `[]` | no |
-| push_group_names | List of existing Okta push group names to associate with the department | `list(string)` | `[]` | no |
-| notes | Custom notes to add to the department group's profile | `string` | `"Group is managed by Terraform. Do not edit manually."` | no |
+|------|-------------|------|---------|----------|
+| `department_name` | Name of the department | `string` | - | yes |
+| `mailing_list_ids` | List of Okta mailing group IDs to include | `list(string)` | `[]` | no |
+| `application_group_ids` | List of Okta application/role group IDs to include | `list(string)` | `[]` | no |
+| `push_group_ids` | List of Okta push notification group IDs to include | `list(string)` | `[]` | no |
+| `notes` | Custom notes for the department group | `string` | `"MANAGED BY TERRAFORM - DO NOT MODIFY MANUALLY"` | no |
 
 ## Outputs
 
-| Name | Description |
-|------|-------------|
-| department_group_id | The ID of the created department group |
-| department_group_name | The name of the created department group |
-| department_rule_id | The ID of the created department group rule |
-| department_rule_name | The name of the created department group rule |
-| department_rule_status | The status of the department group rule |
-| mailing_group_ids | The IDs of associated mailing groups |
-| mailing_group_names | The names of associated mailing groups |
-| application_group_ids | The IDs of associated application groups |
-| application_group_names | The names of associated application groups |
-| push_group_ids | The IDs of associated push groups |
-| push_group_names | The names of associated push groups |
-| all_assigned_group_ids | All group IDs that users will be assigned to via the rule |
-| custom_profile_attributes | The custom profile attributes assigned to the department group |
+| Name | Description | Type |
+|------|-------------|------|
+| `department_group_name` | The name of the created department group | `string` |
+| `department_rule_name` | The ID of the created department group | `string` |
+| `mailing_group_names` | Names of associated mailing groups | `map(string)` |
+| `application_group_names` | Names of associated application groups | `map(string)` |
+| `push_group_names` | Names of associated push groups | `map(string)` |
 
 ## How It Works
 
-1. **Group Creation**: The module creates a department group with the naming convention `DEPT-{department_name}`
-2. **Automatic Assignment**: A group rule is created that automatically assigns users to the department group when:
-   - Their `user.department` attribute matches the specified department name
-   - Their account is active (`user.active == true`)
-3. **Group Associations**: Users in the department are also automatically added to any specified mailing lists, application groups, or push groups
-4. **Custom Attributes**: The department group includes custom profile attributes that document the associated groups and notes
+1. **Group Creation**: The module creates a department group with the name `DEPT-{department_name}`
+2. **Rule Configuration**: A group rule is created that automatically assigns users when their `user.department` attribute matches the specified department name
+3. **Group Integration**: If additional group IDs are provided, they are included in the assignment rule, allowing users to be added to multiple groups simultaneously
+4. **Metadata Management**: Custom profile attributes are stored on the group to track:
+   - Management notes
+   - Associated application groups
+   - Associated mailing lists
+   - Associated push groups
 
-## Authentication
+## Group Assignment Logic
 
-This module requires OAuth 2.0 authentication with Okta. You'll need:
+The module creates an Okta group rule with the following expression:
+```
+user.department == "{department_name}"
+```
 
-1. An OAuth 2.0 application in Okta with the following scopes:
-   - `okta.groups.manage`
-   - `okta.groups.read`
-2. A private key and key ID for JWT authentication
+This rule ensures that:
+- Users are automatically added to the department group when their department attribute matches
+- Users are removed from the group if their department changes
+- Assignment happens in real-time as user attributes are updated
 
-See the [Okta Terraform Provider documentation](https://registry.terraform.io/providers/okta/okta/latest/docs) for detailed authentication setup instructions.
+## Best Practices
 
-## Development
+1. **Naming Conventions**: Department names should be consistent with your organization's user profile data
+2. **Group Reuse**: Link existing functional groups (mailing lists, app groups) rather than creating duplicates
+3. **Access Control**: Ensure your Okta API credentials have appropriate permissions and are stored securely
+4. **State Management**: Use remote state backend for team collaboration
+5. **Change Management**: Review Terraform plans carefully before applying changes to production
 
-### Dependencies
+## Example Directory Structure
 
-This project can install most dependencies automatically using a package manager:
+```
+.
+├── main.tf          # Main module configuration
+├── providers.tf     # Provider configuration
+├── variables.tf     # Variable definitions
+├── outputs.tf       # Output definitions
+└── departments/     # Department-specific configurations
+    ├── engineering.tf
+    ├── sales.tf
+    └── marketing.tf
+```
 
-* Windows: [Chocolatey](https://chocolatey.org/)
-* MacOS: [Homebrew](https://brew.sh/)
+## Troubleshooting
 
-Run `make install` to install most tools automatically.
+### Common Issues
 
-> [!WARNING]
-> [pre-commit](https://pre-commit.com/#install) and [Checkov](https://www.checkov.io/2.Basics/Installing%20Checkov.html) need to be installed manually on Windows.
+1. **Authentication Errors**: Ensure your OAuth 2.0 credentials are valid and have the required scopes
+2. **Group Already Exists**: Check if a group with the same name already exists in Okta
+3. **Rule Conflicts**: Verify that no conflicting group rules exist for the same user criteria
+4. **Missing Groups**: Ensure all referenced group IDs (mailing, application, push) exist in your Okta organization
 
-### Pre-Commit Hooks
+### Debug Commands
 
-After cloning this repository, run `make precommit_install` to initialize pre-commit hooks.
+```bash
+# Validate configuration
+terraform validate
 
-### Available Make Commands
+# Plan changes
+terraform plan
 
-- `make chores` - Update documentation with Terraform-Docs and run automatic formatting
-- `make test_security` - Run Trivy and Checkov security scans
-- `make test_tflint` - Run TFLint for Terraform linting
-- `make fix_tflint` - Automatically fix TFLint issues (review changes before committing)
-- `make documentation` - Generate documentation using terraform-docs
+# Show current state
+terraform state list
+terraform state show module.engineering_department.okta_group.department_group
+```
 
-## Examples
+## Contributing
 
-See the [examples](./examples) directory for complete usage examples:
-
-- [Basic](./examples/basic) - Simple department setup
-- [Complete](./examples/complete) - Advanced setup with multiple departments and group associations
+When contributing to this module:
+1. Follow Terraform best practices and style conventions
+2. Update documentation for any new features or changes
+3. Test changes in a non-production environment first
+4. Submit pull requests with clear descriptions of changes
 
 ## License
 
-[Specify your license]
+[Specify your license here]
+
+## Support
+
+For issues or questions:
+- Check existing issues in the repository
+- Review Okta Terraform provider documentation
+- Contact your organization's infrastructure team
