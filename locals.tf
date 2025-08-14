@@ -21,7 +21,8 @@ locals {
     { notes = local.notes },
     length(local.app_group_names) > 0 ? { applicationAssignments = local.app_group_names } : {},
     length(local.mailing_group_names) > 0 ? { mailingLists = local.mailing_group_names } : {},
-    length(local.push_group_names) > 0 ? { pushGroups = local.push_group_names } : {}
+    length(local.push_group_names) > 0 ? { pushGroups = local.push_group_names } : {},
+    {assignmentProfile = "Not an application assignment group"}
   )
 
   # Group rule configuration
