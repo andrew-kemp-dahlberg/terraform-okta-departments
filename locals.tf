@@ -13,12 +13,8 @@ locals {
   mailing_group_names = [for grp in data.okta_group.mailing_groups : "ML-${grp.name}"]
   
   # Add APP-ROLE- or APP- prefix to application groups based on pattern
-  app_group_names = [for grp in data.okta_group.application_groups : 
-    length(regexall("\\{[^}]+-[^}]+\\}", grp.name)) > 0 ? "APP-ROLE-${grp.name}" :
-    length(regexall("\\{[^}]+\\}", grp.name)) > 0 ? "APP-${grp.name}" :
-    "APP-${grp.name}"
-  ]
-  
+  app_group_names = [for grp in data.okta_group.application_groups :  "APP-ROLE-${grp.name}" ]
+
   # Add PG- prefix to push groups
   push_group_names = [for grp in data.okta_group.push_groups : "PG-${grp.name}"]
 
